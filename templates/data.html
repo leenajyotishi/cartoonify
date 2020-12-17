@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html >
+<!--From https://codepen.io/frytyler/pen/EGdtg-->
+<head>
+  <meta charset="UTF-8">
+  <title>Pricing Intelligent Tool</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="container">
+  <h2>Pricing Intelligent Tool</h2>
+  <p></p>
+        <th>Product Name</th>
+        <th>Price</th>
+        
+      </tr>
+    </thead>
+    <tbody>
+    {% if data %}   
+    {% for i in data %} 
+      <tr> 
+        <td>{{i.ds}}</td> 
+        <td>{{i.QBC}}</td> 
+      
+      </tr> 
+   {% endfor %} 
+    {% endif %}  
+    {{data | safe}}
+    </div>
+    </tr>
+      <tr>
+       
+      
+      </tr>
+     
+    </tbody>
+  </table>
+</div>
+
+
+</body>
+</html>
