@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+
 
 from flask import Flask,render_template
 import cv2 #for image processing
@@ -15,15 +15,14 @@ from PIL import ImageTk, Image
 import random
 """ fileopenbox opens the box to choose file
 and help us store file path as string """
-def upload():
-    ImagePath=easygui.fileopenbox()
-    cartoonify(ImagePath)
-    
-
-
 app=Flask(__name__)
+
 @app.route('/')
 def home():
+    return render_template('Main.html')
+
+@app.route('/test')
+def test():
     ImagePath=easygui.fileopenbox()
     originalmage = cv2.imread(ImagePath)
     originalmage = cv2.cvtColor(originalmage, cv2.COLOR_BGR2RGB)
@@ -71,20 +70,6 @@ def home():
     return render_template('plot.html', name = 'plot3', url ='/static/images/'+ str(rannum) +'.png')
 
 
-def cartoonify(ImagePath):
-    #read the image
-    originalmage = cv2.imread(ImagePath)
-    originalmage = cv2.cvtColor(originalmage, cv2.COLOR_BGR2RGB)
-#print(image)  # image is stored in form of numbers
-# confirm that image is chosen
-    if originalmage is None:
-        print("Can not find any image. Choose appropriate file")
-        sys.exit()
-    ReSized1 = cv2.resize(originalmage, (960, 540))
-    
-    grayScaleImage = cv2.cvtColor(originalmage, cv2.COLOR_BGR2GRAY)
-    ReSized2 = cv2.resize(grayScaleImage, (960, 540))
-   # plt.imshow(ReSized1, cmap='gray')
-    
+
 if __name__ == "__main__":
      app.run(debug=True)
