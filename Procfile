@@ -1,1 +1,1 @@
-web: gunicorn run:cartoonifydemo
+web : sh setup.sh && streamlit run app.py
