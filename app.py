@@ -1,6 +1,6 @@
 #opencv-python==4.4.0.46
 
-from flask import Flask,render_template
+from flask import  Flask, request, jsonify, render_template,redirect,url_for
 import cv2
 import easygui #to open the filebox
 import numpy as np #to store image
