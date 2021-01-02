@@ -1,43 +1,85 @@
-from flask import Flask, request, jsonify, render_template,redirect,url_for
-import pandas as pd
-from fbprophet import Prophet
-app=Flask(__name__)
+from __future__ import division, print_function
+# coding=utf-8
+import sys
+import os
+import glob
+import re
+import numpy as np
 
-@app.route('/')
-def home():
-    return render_template('Main.html')
-    
-@app.route('/data',methods=['POST'])        
-def data():
-   
-    Noofmonths=int(request.form['Noofmonths'])
-    Productnm=request.form['Product']
-    PriceQ1=int(request.form['Quarter1'])
-    PriceQ2=int(request.form['Quarter2'])
-    PriceQ3=int(request.form['Quarter3'])
-    PriceQ4=int(request.form['Quarter4'])
-    data1 = {'Product':[Productnm],'2020-01-01':[PriceQ1],'2020-03-01':[PriceQ2],'2020-06-01':[PriceQ3],
-       '2020-09-01':[PriceQ4]}
-    df1 = pd.DataFrame(data1)
-    gapminder_tidy = df1.melt(id_vars=["Product"], 
-                              var_name="year", 
-                              value_name="Amount")
-    df = gapminder_tidy.rename(columns={'year': 'ds', 'Amount':'y'})
-    grouped = df.groupby('Product')
-    final = pd.DataFrame()
-    for g in grouped.groups:
-        group = grouped.get_group(g)
-        m = Prophet()
-        m.fit(group)
-        future = m.make_future_dataframe(periods=Noofmonths, freq='M')
-        forecast = m.predict(future)    
-        forecast = forecast.rename(columns={'yhat': g})
-        final = pd.merge(final, forecast.set_index('ds'), how='outer', left_index=True, right_index=True)
-    final = final[[ g for g in grouped.groups.keys()]]
-    dff = pd.DataFrame(final)
-    dff = dff.rename(columns={'ds': 'd'})
-    return render_template('data.html', data=dff.to_html(classes='form-group'))
+# Keras
+from keras.applications.imagenet_utils import preprocess_input, decode_predictions
+from keras.models import load_model
+from keras.preprocessing import image
+
+# Flask utils
+from flask import Flask, redirect, url_for, request, render_template
+from werkzeug.utils import secure_filename
+from gevent.pywsgi import WSGIServer
+
+# Define a flask app
+app = Flask(__name__)
+
+# Model saved with Keras model.save()
+MODEL_PATH = 'models/model_resnet.h5'
+
+# Load your trained model
+# model = load_model(MODEL_PATH,compile=False)
+# model._make_predict_function()          # Necessary
+# print('Model loaded. Start serving...')
+
+# You can also use pretrained model from Keras
+# Check https://keras.io/applications/
+from keras.applications.resnet50 import ResNet50
+model = ResNet50(weights='imagenet')
+model.save('models/model_resnet.h5')
+print('Model loaded. Check http://127.0.0.1:5000/')
 
 
-if __name__ == "__main__":
-     app.run(debug=True)
+def model_predict(img_path, model):
+    img = image.load_img(img_path, target_size=(224, 224))
+
+    # Preprocessing the image
+    x = image.img_to_array(img)
+    # x = np.true_divide(x, 255)
+    x = np.expand_dims(x, axis=0)
+
+    # Be careful how your trained model deals with the input
+    # otherwise, it won't make correct prediction!
+    x = preprocess_input(x, mode='caffe')
+
+    preds = model.predict(x)
+    return preds
+
+
+@app.route('/', methods=['GET'])
+def index():
+    # Main page
+    return render_template('index.html')
+
+
+@app.route('/predict', methods=['GET', 'POST'])
+def upload():
+    if request.method == 'POST':
+        # Get the file from post request
+        f = request.files['file']
+
+        # Save the file to ./uploads
+        basepath = os.path.dirname(__file__)
+        file_path = os.path.join(
+            basepath, 'uploads', secure_filename(f.filename))
+        f.save(file_path)
+
+        # Make prediction
+        preds = model_predict(file_path, model)
+
+        # Process your result for human
+        # pred_class = preds.argmax(axis=-1)            # Simple argmax
+        pred_class = decode_predictions(preds, top=1)   # ImageNet Decode
+        result = str(pred_class[0][0][1])               # Convert to string
+        return result
+    return None
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
