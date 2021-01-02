@@ -12,7 +12,6 @@ Flask-Cors==3.0.8
 pandas==1.0.4
 python-dateutil==2.8.1
 numpy==1.18.1
-fbprophet==0.7.1
 beautifulsoup4==4.8.1
 bs4==0.0.1
 certifi==2019.11.28
